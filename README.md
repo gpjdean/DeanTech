@@ -396,6 +396,18 @@ CREATE TABLE IF NOT EXISTS system_settings (
 **更新日期**：2026-02-14
 **编写人员**：DeanTech开发团队
 
-
+## 8. 常用接口汇总
+```bash
+# 查询系统健康
 curl http://localhost:8000/api/dashboard/health-status
 {"systemServices":{"percentage":87,"status":"warning","description":"核心服务运行状态"},"apiResponse":{"percentage":89,"status":"good","description":"API请求响应时间"},"databaseConnection":{"percentage":97,"status":"good","description":"数据库连接稳定性"}}%
+
+
+# SLS配置创建curl -X POST -H "Content-Type: application/json" -d '{"accessKeyId":"test_key2","accessKeySecret":"test_secret2","regionId":"cn-shanghai","defaultProject":"test-project2","defaultLogstore":"test-logstore2","timeout":30,"isActive":false}' http://localhost:8000/api/sls/configs
+
+# SLS配置更新
+curl -X PUT -H "Content-Type: application/json" -d '{"accessKeyId":"test_key_updated","accessKeySecret":"test_secret_updated","regionId":"cn-beijing","defaultProject":"test-project-updated","defaultLogstore":"test-logstore-updated","timeout":45,"isActive":true}' http://localhost:8000/api/sls/configs/2
+
+# # SLS配置删除
+curl -X DELETE http://localhost:8000/api/sls/configs/3
+```
