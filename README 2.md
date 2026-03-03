@@ -372,7 +372,7 @@ MIT License
 
 如有问题或建议，欢迎通过以下方式联系：
 
-- 项目地址：https://github.com/yourusername/PromAlert
+- 项目地址：https://github.com/gpjdean/DeanTech
 - 邮箱：your.email@example.com
 - 开发团队：DeanTech运维团队
 
