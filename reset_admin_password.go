@@ -12,7 +12,7 @@ import (
 func main() {
 	// 连接数据库
 	// 使用正确的数据库连接字符串
-	dsn := "deantech:deantech@tcp(43.143.194.230:3306)/deantech?charset=utf8mb4&parseTime=True&loc=Local"
+	dsn := "username:password@tcp(127.0.0.1:3306)/deantech?charset=utf8mb4&parseTime=True&loc=Local"
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
 		log.Fatalf("Failed to connect to database: %v", err)

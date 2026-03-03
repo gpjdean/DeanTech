@@ -9,11 +9,11 @@ import (
 
 func main() {
 	// 数据库配置
-	oldDB := "promalert"
+	oldDB := "olddeantech"
 	newDB := "deantech"
 	dbUser := "root"
 	dbPassword := "password" // 请替换为实际的root密码
-	dbHost := "43.143.194.230"
+	dbHost := "127.0.0.1"
 	dbPort := "3306"
 	
 	// 1. 创建新数据库
