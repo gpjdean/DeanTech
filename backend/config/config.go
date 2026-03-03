@@ -150,7 +150,7 @@ func LoadConfig(configPath string) (*Config, error) {
 			IdleTimeout:  60 * time.Second,
 		},
 		Database: DatabaseConfig{
-			DSN:                "deantech:jkFmTJhsTBKNZsXz@tcp(43.143.194.230:3306)/deantech?charset=utf8mb4&parseTime=True&loc=Local",
+			DSN:                "username:password@tcp(127.0.0.1:3306)/deantech?charset=utf8mb4&parseTime=True&loc=Local",
 			MaxOpenConns:       100,
 			MaxIdleConns:       20,
 			ConnMaxLifetime:    1 * time.Hour,
