@@ -108,9 +108,9 @@ TARGET_OS=linux TARGET_ARCH=amd64 VERSION=v1.3.0 ./scripts/package_release.sh
 
 ## 部署方式
 
-- Docker 说明见 [`docs/DEPLOYMENT.md`](DEPLOYMENT.md)
-- SQL 初始化见 [`docs/SQL_INIT.md`](SQL_INIT.md)
-- 宣传、架构、Docker、K8s 与接口总文档见 [`docs/PLATFORM_PROMOTION_GUIDE.md`](PLATFORM_PROMOTION_GUIDE.md)
+- Docker 说明见 [`DEPLOYMENT.md`](DEPLOYMENT.md)
+- SQL 初始化见 [`SQL_INIT.md`](SQL_INIT.md)
+- 宣传、架构、Docker、K8s 与接口总文档见 [`PLATFORM_PROMOTION_GUIDE.md`](PLATFORM_PROMOTION_GUIDE.md)
 
 ## 主要接口
 
