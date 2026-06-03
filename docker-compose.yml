@@ -1,0 +1,88 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.0
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root123
+      MYSQL_DATABASE: deantech
+      MYSQL_USER: deantech
+      MYSQL_PASSWORD: deantech123
+    command:
+      - --default-authentication-plugin=mysql_native_password
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_general_ci
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./deploy/mysql/init:/docker-entrypoint-initdb.d
+    networks:
+      - deantech-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-proot123"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  frontend:
+    image: registry.cn-beijing.aliyuncs.com/deanmr/deantech:deantech-frontend-v6.0
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+      - guac-gateway
+    restart: always
+    networks:
+      - deantech-network
+
+  backend:
+    image: registry.cn-beijing.aliyuncs.com/deanmr/deantech:deantech-backend-v6.0
+    ports:
+      - "8000:8000"
+    restart: always
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      - GIN_MODE=release
+      - SERVER_HOST=0.0.0.0
+      - SERVER_PORT=8000
+      - DATABASE_DSN=deantech:deantech123@tcp(mysql:3306)/deantech?charset=utf8mb4&parseTime=True&loc=Local
+      - PROMETHEUS_ADDRESS=http://prometheus:9090
+      - ALERTMANAGER_URL=http://alertmanager:9093
+      - GUACAMOLE_WS_URL=/guac-ws/
+      - GUACAMOLE_TOKEN_KEY=deantech-guacamole-secret
+    networks:
+      - deantech-network
+
+  guacd:
+    image: registry.cn-beijing.aliyuncs.com/deanmr/deantech:guacd
+    restart: always
+    environment:
+      - GUACD_LOG_LEVEL=debug
+    networks:
+      - deantech-network
+
+  guac-gateway:
+    image: registry.cn-beijing.aliyuncs.com/deanmr/deantech:guac-gateway
+    ports:
+      - "8081:8081"
+    restart: always
+    depends_on:
+      - guacd
+    environment:
+      - PORT=8081
+      - GUACD_HOST=guacd
+      - GUACD_PORT=4822
+      - GUACAMOLE_TOKEN_KEY=deantech-guacamole-secret
+    networks:
+      - deantech-network
+
+networks:
+  deantech-network:
+    driver: bridge
+
+volumes:
+  mysql_data:
