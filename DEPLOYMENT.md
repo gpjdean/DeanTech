@@ -20,6 +20,15 @@ docker build -t deantech-frontend ./frontend
 docker build -t deantech-guac-gateway ./guac-gateway
 ```
 
+如果你希望后端镜像完全不依赖宿主机预装 `kubectl`，请先把对应平台二进制放到：
+
+```text
+backend/tools/kubectl/linux-amd64/kubectl
+backend/tools/kubectl/linux-arm64/kubectl
+```
+
+镜像构建时会自动把 `tools/kubectl` 一并复制进容器，并优先使用容器内二进制。
+
 ### 2.2 运行
 
 ```bash
@@ -48,12 +57,14 @@ docker run -d \
   -e ALERTMANAGER_URL='http://alertmanager:9093' \
   deantech-backend
 
+> 推荐把 `kubectl` 作为平台发布资产一起构建进镜像，而不是依赖容器基础镜像或宿主机环境。
+
 > 如果你的 Prometheus / Alertmanager 不在同一个 Docker 网络中，请把上述地址替换成实际可访问的地址。
 
 docker run -d \
   --name guacd \
   --network deantech-network \
-  docker.m.daocloud.io/guacamole/guacd:1.5.5
+  registry.cn-beijing.aliyuncs.com/deanmr/deantech:guacd
 
 docker run -d \
   --name guac-gateway \
@@ -63,7 +74,7 @@ docker run -d \
   -e GUACD_HOST=guacd \
   -e GUACD_PORT=4822 \
   -e GUACAMOLE_TOKEN_KEY=deantech-guacamole-secret \
-  deantech-guac-gateway
+  registry.cn-beijing.aliyuncs.com/deanmr/deantech:guac-gateway
 
 docker run -d \
   --name frontend \
@@ -82,6 +93,8 @@ Prometheus 和 Alertmanager 默认按外部服务处理，请把 `PROMETHEUS_ADD
 ```bash
 docker compose up -d --build
 ```
+
+如果 `backend/tools/kubectl/<platform>/kubectl` 已准备好，`docker compose build backend` 时会自动带入容器。
 
 ### 3.2 停止
 
@@ -116,6 +129,24 @@ docker compose logs -f mysql
 | `ALERTMANAGER_URL` | Alertmanager 地址 |
 | `GUACAMOLE_WS_URL` | 网关 WebSocket 地址 |
 | `GUACAMOLE_TOKEN_KEY` | 网关令牌密钥 |
+| `DEANTECH_KUBECTL_BIN` | 可选：显式指定平台内置 kubectl 路径 |
+| `GUACAMOLE_TUNNEL_HOST` | `guacd` 访问临时 RDP 转发口时使用的主机名 |
+| `GUACAMOLE_TUNNEL_BIND` | 后端临时 RDP 转发监听地址 |
+| `GUACAMOLE_TUNNEL_TTL_SECONDS` | 临时 RDP 转发保留时长，默认 `600` 秒 |
+
+### 3.6 后端离线发布包
+
+后端支持打成自包含发布目录，目录内会保留 `config/`、`migrations/` 和平台内置 `kubectl` 目录：
+
+```bash
+cd backend
+TARGET_OS=linux TARGET_ARCH=amd64 VERSION=v1.3.0 ./scripts/package_release.sh
+```
+
+输出：
+
+- `dist/deantech-backend-v1.3.0-linux-amd64/`
+- `dist/deantech-backend-v1.3.0-linux-amd64.tar.gz`
 
 ## 4. Guacamole 控制台服务说明
 
@@ -132,6 +163,7 @@ docker compose logs -f mysql
 - `backend` 与 `guac-gateway` 必须使用相同的 `GUACAMOLE_TOKEN_KEY`。
 - 前端代理必须转发 `/guac-ws/` 到 `guac-gateway:8081`。
 - 目标 Windows 主机必须开启 RDP，且防火墙允许 `3389` 或你自定义的 RDP 端口。
+- 如果 Windows 虚机需要经“网域主机”跳转，`guacd` 必须能访问后端暴露出来的临时转发地址。
 
 ### 4.2 docker compose 推荐方式
 
@@ -141,6 +173,7 @@ docker compose logs -f mysql
 - `guac-gateway`
 - `backend` 中的 `GUACAMOLE_WS_URL=/guac-ws/`
 - `backend` / `guac-gateway` 共享的 `GUACAMOLE_TOKEN_KEY`
+- KVM Windows 虚机经网域主机跳转时，容器内默认会使用 `backend` 服务名访问临时转发口
 
 启动命令：
 
@@ -208,6 +241,14 @@ docker compose exec -T guac-gateway node -e "const net=require('net');const s=ne
 - 如果你是在宿主机直接运行 `npm start`，默认 `GUACD_HOST=guacd` 可能无法解析。
 - 推荐直接使用 `docker compose` 启动 `guacd + guac-gateway`。
 - 若坚持宿主机运行 `guac-gateway`，需要显式设置可达的 `GUACD_HOST`，例如 `127.0.0.1`。
+
+#### KVM Windows 虚机启用了网域主机，但浏览器里仍然连不上
+
+- Docker Compose 部署下，后端会默认使用 `backend` 作为临时 RDP 转发主机名。
+- 如果你是“后端跑宿主机、guacd/guac-gateway 跑容器”的混合部署，通常需要在后端显式设置：
+  - `GUACAMOLE_TUNNEL_HOST=host.docker.internal`
+  - `GUACAMOLE_TUNNEL_BIND=0.0.0.0`
+- 如果 `guacd` 与后端不在同一网络，请把 `GUACAMOLE_TUNNEL_HOST` 改成 `guacd` 实际可达的后端地址。
 
 #### Windows 控制台显示已连接，但黑屏
 
