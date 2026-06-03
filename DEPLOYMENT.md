@@ -12,24 +12,7 @@
 
 ## 2. Docker 方式
 
-### 2.1 构建镜像
-
-```bash
-docker build -t deantech-backend ./backend
-docker build -t deantech-frontend ./frontend
-docker build -t deantech-guac-gateway ./guac-gateway
-```
-
-如果你希望后端镜像完全不依赖宿主机预装 `kubectl`，请先把对应平台二进制放到：
-
-```text
-backend/tools/kubectl/linux-amd64/kubectl
-backend/tools/kubectl/linux-arm64/kubectl
-```
-
-镜像构建时会自动把 `tools/kubectl` 一并复制进容器，并优先使用容器内二进制。
-
-### 2.2 运行
+### 2.1 运行
 
 ```bash
 docker network create deantech-network
@@ -55,7 +38,7 @@ docker run -d \
   -e DATABASE_DSN='deantech:deantech123@tcp(mysql:3306)/deantech?charset=utf8mb4&parseTime=True&loc=Local' \
   -e PROMETHEUS_ADDRESS='http://prometheus:9090' \
   -e ALERTMANAGER_URL='http://alertmanager:9093' \
-  deantech-backend
+  registry.cn-beijing.aliyuncs.com/deanmr/deantech:deantech-backend-v6.0
 
 > 推荐把 `kubectl` 作为平台发布资产一起构建进镜像，而不是依赖容器基础镜像或宿主机环境。
 
@@ -80,21 +63,20 @@ docker run -d \
   --name frontend \
   --network deantech-network \
   -p 80:80 \
-  deantech-frontend
+  registry.cn-beijing.aliyuncs.com/deanmr/deantech:deantech-frontend-v6.0
 ```
 
 ## 3. docker-compose 方式
 
-仓库根目录的 [docker-compose.yml](../docker-compose.yml) 已经补齐 MySQL、backend、frontend、guacd 和 guac-gateway。
+仓库根目录的 [docker-compose.yml](docker-compose.yml) 已经补齐 MySQL、backend、frontend、guacd 和 guac-gateway。
 Prometheus 和 Alertmanager 默认按外部服务处理，请把 `PROMETHEUS_ADDRESS` 和 `ALERTMANAGER_URL` 指向你真实可访问的地址。
 
 ### 3.1 启动
 
 ```bash
-docker compose up -d --build
+docker compose up -d
 ```
 
-如果 `backend/tools/kubectl/<platform>/kubectl` 已准备好，`docker compose build backend` 时会自动带入容器。
 
 ### 3.2 停止
 
@@ -167,7 +149,7 @@ TARGET_OS=linux TARGET_ARCH=amd64 VERSION=v1.3.0 ./scripts/package_release.sh
 
 ### 4.2 docker compose 推荐方式
 
-仓库根目录的 [docker-compose.yml](../docker-compose.yml) 已经包含：
+仓库根目录的 [docker-compose.yml](docker-compose.yml) 已经包含：
 
 - `guacd`
 - `guac-gateway`
@@ -340,7 +322,7 @@ spec:
     spec:
       containers:
         - name: backend
-          image: your-registry/deantech-backend:latest
+          image: registry.cn-beijing.aliyuncs.com/deanmr/deantech:deantech-backend-v6.0
           ports:
             - containerPort: 8000
           envFrom:
@@ -383,7 +365,7 @@ spec:
     spec:
       containers:
         - name: frontend
-          image: your-registry/deantech-frontend:latest
+          image: registry.cn-beijing.aliyuncs.com/deanmr/deantech:deantech-frontend-v6.0
           ports:
             - containerPort: 80
 ```
