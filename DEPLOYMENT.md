@@ -38,7 +38,7 @@ docker run -d \
   -e DATABASE_DSN='deantech:deantech123@tcp(mysql:3306)/deantech?charset=utf8mb4&parseTime=True&loc=Local' \
   -e PROMETHEUS_ADDRESS='http://prometheus:9090' \
   -e ALERTMANAGER_URL='http://alertmanager:9093' \
-  registry.cn-beijing.aliyuncs.com/deanmr/deantech:deantech-backend-v6.0
+  registry.cn-beijing.aliyuncs.com/deanmr/deantech:deantech-backend-v7.0
 
 > 推荐把 `kubectl` 作为平台发布资产一起构建进镜像，而不是依赖容器基础镜像或宿主机环境。
 
@@ -63,7 +63,7 @@ docker run -d \
   --name frontend \
   --network deantech-network \
   -p 80:80 \
-  registry.cn-beijing.aliyuncs.com/deanmr/deantech:deantech-frontend-v6.0
+  registry.cn-beijing.aliyuncs.com/deanmr/deantech:deantech-frontend-v7.0
 ```
 
 ## 3. docker-compose 方式
@@ -322,7 +322,7 @@ spec:
     spec:
       containers:
         - name: backend
-          image: registry.cn-beijing.aliyuncs.com/deanmr/deantech:deantech-backend-v6.0
+          image: registry.cn-beijing.aliyuncs.com/deanmr/deantech:deantech-backend-v7.0
           ports:
             - containerPort: 8000
           envFrom:
@@ -365,7 +365,7 @@ spec:
     spec:
       containers:
         - name: frontend
-          image: registry.cn-beijing.aliyuncs.com/deanmr/deantech:deantech-frontend-v6.0
+          image: registry.cn-beijing.aliyuncs.com/deanmr/deantech:deantech-frontend-v7.0
           ports:
             - containerPort: 80
 ```
